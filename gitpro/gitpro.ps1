@@ -82,4 +82,3 @@ git mv file_from file_to
 
 # see what has happened with the file 
 git log
-# PAGE 39
