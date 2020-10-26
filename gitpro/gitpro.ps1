@@ -168,9 +168,111 @@ for now, we’ll go over stashing and branching in Git Branching; these are gene
 go#>
 git restore FileName #! Dangerous command
 
+# show my remotes
+git clone https://github.com/focusOnCoding/markdown-portfolio.git
 
+# show the URL of my clone
+git remote -v 
 
+# adding remote repositories
+git remote add <shortname> <url>
 
+<# Now you can use the string pb on the command line in lieu of the whole URL. For example, if you
+want to fetch all the information that Paul has but that you don’t yet have in your repository, you
+can run git fetch pb#> 
+git fetch ph # ph is an aliase that i created above
 
+# PULLING FROM A REMOTE REPO
+git fetch <remote> # now i have  references to all the branches from that remote
+
+<#If your current branch is set up to track a remote branch (see the next section and Git Branching for
+more information), you can use the git pull command to automatically fetch and then merge that
+remote branch into your current branch. This may be an easier or more comfortable workflow for
+you; and by default, the git clone command automatically sets up your local master branch to track
+the remote master branch (or whatever the default branch is called) on the server you cloned from.
+Running git pull generally fetches data from the server you originally cloned from and
+automatically tries to merge it into the code you’re currently working on.
+
+From git version 2.27 onward, git pull will give a warning if the pull.rebase
+variable is not set. Git will keep warning you until you set the variable.
+If you want the default behavior of git (fast-forward if possible, else create a merge
+commit): git config --global pull.rebase "false"
+If you want to rebase when pulling: git config --global pull.rebase "true"
+#>
+
+# Pushing to a remote repo
+git push <remote> <branch>
+git push origin master # If you want to push your master branch to your origin server
+
+# inspecting a remote
+git remote show origin
+
+# Renaming and removing remotes
+git remote rename pb paul
+
+# remove a remote
+git remote remove paul
+
+# tagging
+git tag # list tags
+git tag -l "v1.8.5" #You can also search for tags that match a particular pattern
+
+# creating annotated tags
+# Creating an annotated tag in Git is simple. The easiest way is to specify -a when you run the tag command:
+git tag -a v1.4 -m "my version 1.4"
+# see the tag i just created
+git show v1.4
+
+# To create a lightweight tag, don’t supply any of the -a, -s, or -m options, just provide a tag name:
+git tag v1.4-lw # This time, if you run git show on the tag, you don’t see the extra tag information. The command just shows the commit:
+
+# tagging later after i have commited
+git log --pretty=oneline # so i can see the id of the commit i want to use
+git tag -a v1.2 9fcebo2 #id = 9fcebo2
+
+# sharing tags
+git push origin <tagname> # If you have a lot of tags that you want to push up at once, you can also use the --tags
+
+# deleting tags
+git tag -d v1.4-lw
+
+# Note that this does not remove the tag from any remote servers. There are two common variations for deleting a tag from a remote server.
+git push origin :refs/tags/v1.4-lw
+
+# The second (and more intuitive) way to delete a remote tag is with:
+git push origin --delete <tagname>
+
+# Checking out Tags
+# If you want to view the versions of files a tag is pointing to
+git checkout v2.0.0 # detached HEAD” state, if you make changes and then create a commit, the tag will stay the same, but your new commit won’t belong to any branch and will be unreachable
+
+# say you’re fixing a bug on an older version, for instance — you will generally want to create a branch:
+git checkout -b version2 v2.0.0
+
+# ALIASES
+# setting up aliases using git config
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.st status
+
+<# this technique can also be very useful in creating commands that you think should exist. For
+example, to correct the usability problem you encountered with unstaging a file, you can add your
+own unstage alias to Git:#>
+git config --global alias.unstage 'reset HEAD --'
+
+# This makes the following two commands equivalent:
+git unstage fileA
+git reset HEAD -- fileA
+
+# This seems a bit clearer. It’s also common to add a last command, like this:
+git config --global alias.last 'log -1 HEAD'
+git last
+
+<# As you can tell, Git simply replaces the new command with whatever you alias it for. However,
+maybe you want to run an external command, rather than a Git subcommand. In that case, you
+start the command with a ! character. This is useful if you write your own tools that work with a
+Git repository. We can demonstrate by aliasing git visual to run gitk:#>
+git config --global alias.visual '!gitk'
 
 
