@@ -275,4 +275,79 @@ start the command with a ! character. This is useful if you write your own tools
 Git repository. We can demonstrate by aliasing git visual to run gitk:#>
 git config --global alias.visual '!gitk'
 
+# creating a new branch
+git branch branch1 #  In Git, this is a pointer to the local branch you’re currently on. In this case,
+# you’re still on master. The git branch command only created a new branch — it didn’t switch to that
 
+# You can easily see this by running a simple git log command that shows you where the branch
+# pointers are pointing. This option is called --decorate.
+git log --oneline --decorate # see all my old commits in short notation
+
+# switching branches
+# To switch to an existing branch, you run the git checkout command. Let’s switch to the new testing branch:
+git checkout testing
+
+# show all branchs
+git log --all
+
+#facts
+<#Now your project history has diverged (see Divergent history). You created and switched to a
+branch, did some work on it, and then switched back to your main branch and did other work. Both
+of those changes are isolated in separate branches: you can switch back and forth between the
+branches and merge them together when you’re ready. And you did all that with simple branch,
+checkout, and commit commands#>
+
+#  it will print out the history of your commits, showing where your branch pointers are and how your history has diverged.
+git log --oneline --decorate --graph --all
+
+# It’s typical to create a new branch and want to switch to that new branch at the same time — this can be done in one operation with 
+git checkout -b <newbranchname>
+# or
+# Switch to an existing branch: 
+git switch testing-branch
+# Create a new branch and switch to it: git switch -c new-branch. The -c flag
+#stands for create, you can also use the full flag: --create
+git switch -c new-branch
+# Return to your previously checked out branch: 
+git switch -
+
+# branching and mergeing
+<#You’ve decided that you’re going to work on issue #53 in whatever issue-tracking system your
+company uses. To create a new branch and switch to it at the same time, you can run the git
+checkout command with the -b switch:#>
+git checkout -b iss53 #Switched to a new branch "iss53"
+# This is shorthand for:
+git branch iss53
+git checkout iss53 # page 73
+
+# FACT
+<# At this point, your project working directory is exactly the way it was before you started working
+on issue #53, and you can concentrate on your hotfix. This is an important point to remember:
+when you switch branches, Git resets your working directory to look like it did the last time you
+committed on that branch. It adds, removes, and modifies files automatically to make sure your
+working copy is what the branch looked like on your last commit to it.
+#>
+
+# You can run your tests, make sure the hotfix is what you want, and finally merge the hotfix branch back into your master branch to deploy to production. You do this with the git merge command:
+git checkout master
+git merge hotfix # this hotfix branch was created  on the master branch page 75
+
+<# After your super-important fix is deployed, you’re ready to switch back to the work you were doing
+before you were interrupted. However, first you’ll delete the hotfix branch, because you no longer
+need it — the master branch points at the same place. You can delete it with the -d option to git
+branch:#>
+git branch -d hotfix
+Deleted branch hotfix (3a0874c)
+
+# Now you can switch back to your work-in-progress branch on issue #53 and continue working on it.
+git checkout iss53
+Switched to branch "iss53"
+
+<# Basic MergingSuppose you’ve decided that your issue #53 work is complete and ready to be merged into your
+master branch. In order to do that, you’ll merge your iss53 branch into master, much like you
+merged your hotfix branch earlier. All you have to do is check out the branch you wish to merge
+into and then run the git merge command:#>
+git checkout master
+Switched to branch 'master'
+git merge iss53
+Merge made by the 'recursive' strategy
