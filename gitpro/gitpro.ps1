@@ -340,7 +340,7 @@ git branch -d hotfix
 Deleted branch hotfix (3a0874c)
 
 # Now you can switch back to your work-in-progress branch on issue #53 and continue working on it.
-git checkout iss53
+git checkout iss53 # Now that your work is merged in, you have no further need for the branch
 Switched to branch "iss53"
 
 <# Basic MergingSuppose you’ve decided that your issue #53 work is complete and ready to be merged into your
@@ -351,3 +351,51 @@ git checkout master
 Switched to branch 'master'
 git merge iss53
 Merge made by the 'recursive' strategy
+
+# page 77 Merge Conflicts
+# If you want to use a graphical tool to resolve these issues, you can run 
+git mergetool
+
+<#The git branch command does more than just create and delete branches. If you run it with no
+arguments, you get a simple listing of your current branches:#>
+git branch
+
+# To see the last commit on each branch, you can run 
+git branch -v
+
+<# The useful --merged and --no-merged options can filter this list to branches that you have or have not
+yet merged into the branch you’re currently on. To see which branches are already merged into the
+branch you’re on, you can run git branch --merged:#>
+git branch --merged
+
+# To see all the branches that contain work you haven’t yet merged in, you can run git branch --no -merged:
+git branch --no-merged
+
+# This shows your other branch. Because it contains work that isn’t merged in yet, trying to delete it with git branch -d will fail:
+git branch -d testing
+
+<# You can always provide an additional argument to ask about the merge state with
+respect to some other branch without checking that other branch out first, as in,
+what is not merged into the master branch?#>
+git checkout testing
+git branch --no-merged master
+
+# Changing a branch name
+# Rename the branch locally with the git branch --move command:
+git branch --move bad-branch-name corrected-branch-name
+# This replaces your bad-branch-name with corrected-branch-name, but this change is only local for
+# now. To let others see the corrected branch on the remote, push it:
+git push --set-upstream origin corrected-branch-name
+#Now we’ll take a brief look at where we are now:
+git branch --all
+
+# Notice that you’re on the branch corrected-branch-name. The corrected branch is available on the
+# remote. However the bad branch is also still present on the remote. You can delete the bad branch from the remote:
+git push origin --delete bad-branch-name # Now the bad branch name is fully replaced with the corrected branch name
+
+# Rename your local master branch into main with the following command
+git branch --move master main
+
+# There’s no master branch locally anymore, because it’s renamed to the main branch. To let others see the new main branch, you need to push it to the remote. This makes the renamed
+# branch available on the remote.
+git push --set-upstream origin main
