@@ -447,3 +447,22 @@ move.#>
 case, git fetch origin). This command looks up which server “origin” is (in this case, it’s
 git.ourcompany.com), fetches any data from it that you don’t yet have, and updates your local
 database, moving your origin/master pointer to its new, more up-to-date position.#>
+
+<# Pushing
+When you want to share a branch with the world, you need to push it up to a remote to which you
+have write access. Your local branches aren’t automatically synchronized to the remotes you write
+to — you have to explicitly push the branches you want to share. That way, you can use private
+branches for work you don’t want to share, and push up only the topic branches you want to
+collaborate on.#>
+
+<# If you have a branch named serverfix that you want to work on with others, you can push it up the
+same way you pushed your first branch. Run git push <remote> <branch>:#>
+git push origin serverfix
+
+<# but you can generally leave it off. You can also do git push origin serverfix:serverfix,
+which does the same thing — it says, “Take my serverfix and make it the remote’s serverfix.” You
+can use this format to push a local branch into a remote branch that is named differently. If you
+didn’t want it to be called serverfix on the remote, you could instead run git push origin
+serverfix:awesomebranch to push your local serverfix branch to the awesomebranch branch on the
+remote project.
+#>
