@@ -598,7 +598,8 @@ git merge client
 the master branch without having to check it out first by running git rebase <basebranch>
 <topicbranch> — which checks out the topic branch (in this case, server) for you and replays it onto
 the base branch (master):#>
-git rebase master server
+git rebase master server # This replays your server work on top of your master work, as shown in Rebasing your server branch on top of your master branch.
+
 
 # Then, you can fast-forward the base branch (master):
 git checkout master
@@ -607,4 +608,24 @@ git merge server
 need them anymore, leaving your history for this entire process looking like Final commit history:
 #>
 git branch -d client
-git branch -d server
+git branch -d server 
+
+# FACTS rebasing
+# Do not rebase commits that exist outside your repository and that people may have based work on.
+<# When you rebase stuff, you’re abandoning existing commits and creating new ones that are similar
+but different. If you push commits somewhere and others pull them down and base work on them,
+and then you rewrite those commits with git rebase and push them up again, your collaborators
+will have to re-merge their work and things will get messy when you try to pull their work back
+into yours.[2] If you only ever rebase commits that have never left your own computer, you’ll be just fine. If you
+rebase commits that have been pushed, but that no one else has based commits from, you’ll also be
+fine. If you rebase commits that have already been pushed publicly, and people may have based
+work on those commits, then you may be in for some frustrating trouble, and the scorn of your
+teammates#>
+
+<# You can also simplify this by running a git pull --rebase instead of a normal git pull. Or you
+could do it manually with a git fetch followed by a git rebase teamone/master in this case.
+If you are using git pull and want to make --rebase the default, you can set the pull.rebase config
+value with something like git config --global pull.rebase true.#>
+git pull --rebase 
+git config --global pull
+
