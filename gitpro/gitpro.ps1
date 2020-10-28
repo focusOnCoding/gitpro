@@ -508,3 +508,34 @@ When you have a tracking branch set up, you can reference its upstream branch
 with the @{upstream} or @{u} shorthand. So if you’re on the master branch and it’s
 tracking origin/master, you can say something like git merge @{u} instead of git
 merge origin/master if you wish#> 
+
+<# If you want to see what tracking branches you have set up, you can use the -vv option to git branch.
+This will list out your local branches with more information including what each branch is tracking
+and if your local branch is ahead, behind or both.#>
+git branch -vv
+
+<# It’s important to note that these numbers are only since the last time you fetched from each server.
+This command does not reach out to the servers, it’s telling you about what it has cached from these
+servers locally. If you want totally up to date ahead and behind numbers, you’ll need to fetch from
+all your remotes right before running this. You could do that like this:
+#>
+git fetch --all; git branch -vv
+
+<# Pulling
+While the git fetch command will fetch all the changes on the server that you don’t have yet, it will
+not modify your working directory at all. It will simply get the data for you and let you merge it
+yourself. However, there is a command called git pull which is essentially a git fetch immediately
+followed by a git merge in most cases. If you have a tracking branch set up as demonstrated in the
+last section, either by explicitly setting it or by having it created for you by the clone or checkout
+commands, git pull will look up what server and branch your current branch is tracking, fetch
+from that server and then try to merge in that remote branch.
+Generally it’s better to simply use the fetch and merge commands explicitly as the magic of git pull
+can often be confusing #>
+git pull #! dengarous
+
+<# Deleting Remote Branches
+Suppose you’re done with a remote branch — say you and your collaborators are finished with a
+feature and have merged it into your remote’s master branch (or whatever branch your stable
+codeline is in). You can delete a remote branch using the --delete option to git push. If you want to
+delete your serverfix branch from the server, you run the following:#>
+git push origin --delete serverfix
