@@ -539,3 +539,35 @@ feature and have merged it into your remote’s master branch (or whatever branc
 codeline is in). You can delete a remote branch using the --delete option to git push. If you want to
 delete your serverfix branch from the server, you run the following:#>
 git push origin --delete serverfix
+
+<# Rebasing
+In Git, there are two main ways to integrate changes from one branch into another: the merge and
+the rebase. In this section you’ll learn what rebasing is, how to do it, why it’s a pretty amazing tool,
+and in what cases you won’t want to use it.#>
+
+<# However, there is another way: you can take the patch of the change that was introduced in C4 and
+reapply it on top of C3. In Git, this is called rebasing. With the rebase command, you can take all the
+changes that were committed on one branch and replay them on a different branch.
+For this example, you would check out the experiment branch, and then rebase it onto the master
+branch as follows:#>
+git checkout experiment
+git rebase master
+# At this point, you can go back to the master branch and do a fast-forward merge.
+git checkout master
+git merge experiment
+
+<# Now, the snapshot pointed to by C4' is exactly the same as the one that was pointed to by C5 in the
+merge example. There is no difference in the end product of the integration, but rebasing makes for
+a cleaner history. If you examine the log of a rebased branch, it looks like a linear history: it
+appears that all the work happened in series, even when it originally happened in parallel.#>
+
+<# Often, you’ll do this to make sure your commits apply cleanly on a remote branch — perhaps in a
+project to which you’re trying to contribute but that you don’t maintain. In this case, you’d do your
+work in a branch and then rebase your work onto origin/master when you were ready to submit
+your patches to the main project. That way, the maintainer doesn’t have to do any integration
+work — just a fast-forward or a clean apply.
+Note that the snapshot pointed to by the final commit you end up with, whether it’s the last of the
+rebased commits for a rebase or the final merge commit after a merge, is the same snapshot — it’s
+only the history that is different. Rebasing replays changes from one line of work onto another in
+the order they were introduced, whereas merging takes the endpoints and merges them together.
+#>
