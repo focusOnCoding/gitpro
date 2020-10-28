@@ -571,3 +571,40 @@ rebased commits for a rebase or the final merge commit after a merge, is the sam
 only the history that is different. Rebasing replays changes from one line of work onto another in
 the order they were introduced, whereas merging takes the endpoints and merges them together.
 #>
+
+<# You can also have your rebase replay on something other than the rebase target branch. Take a
+history like A history with a topic branch off another topic branch, for example. You branched a
+topic branch (server) to add some server-side functionality to your project, and made a commit.
+Then, you branched off that to make the client-side changes (client) and committed a few times.
+Finally, you went back to your server branch and did a few more commits#>
+
+<# Suppose you decide that you want to merge your client-side changes into your mainline for a
+release, but you want to hold off on the server-side changes until it’s tested further. You can take
+the changes on client that aren’t on server (C8 and C9) and replay them on your master branch by
+using the --onto option of git rebase:
+#>
+git rebase --onto master server client <#This basically says, “Take the client branch, figure out the patches since it diverged from the server
+branch, and replay these patches in the client branch as if it was based directly off the master
+branch instead.” It’s a bit complex, but the result is pretty cool.
+#>
+
+<# Now you can fast-forward your master branch (see Fast-forwarding your master branch to include
+the client branch changes):
+#>
+git checkout master
+git merge client
+
+<# Let’s say you decide to pull in your server branch as well. You can rebase the server branch onto
+the master branch without having to check it out first by running git rebase <basebranch>
+<topicbranch> — which checks out the topic branch (in this case, server) for you and replays it onto
+the base branch (master):#>
+git rebase master server
+
+# Then, you can fast-forward the base branch (master):
+git checkout master
+git merge server
+<#You can remove the client and server branches because all the work is integrated and you don’t
+need them anymore, leaving your history for this entire process looking like Final commit history:
+#>
+git branch -d client
+git branch -d server
