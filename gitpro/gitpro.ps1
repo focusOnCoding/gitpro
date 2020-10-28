@@ -399,3 +399,51 @@ git branch --move master main
 # There’s no master branch locally anymore, because it’s renamed to the main branch. To let others see the new main branch, you need to push it to the remote. This makes the renamed
 # branch available on the remote.
 git push --set-upstream origin main
+
+# page 83 changing the master to a new name #! very dangerous
+
+# Branching Workflows
+<#Long-Running Branches
+Because Git uses a simple three-way merge, merging from one branch into another multiple times
+over a long period is generally easy to do. This means you can have several branches that are
+always open and that you use for different stages of your development cycle; you can merge
+regularly from some of them into others.#>
+
+<# Topic Branches
+Topic branches, however, are useful in projects of any size. A topic branch is a short-lived branch
+that you create and use for a single particular feature or related work. This is something you’ve
+likely never done with a VCS before because it’s generally too expensive to create and merge
+branches. But in Git it’s common to create, work on, merge, and delete branches several times a day#>
+
+<#Consider an example of doing some work (on master), branching off for an issue (iss91), working on
+it for a bit, branching off the second branch to try another way of handling the same thing (
+iss91v2), going back to your master branch and working there for a while, and then branching off
+there to do some work that you’re not sure is a good idea (dumbidea branch). Your commit history
+will look something like this:
+#>
+
+<# Remote Branches
+Remote references are references (pointers) in your remote repositories, including branches, tags,
+and so on. You can get a full list of remote references explicitly with  for remote branches as well as more information. Nevertheless, a more
+common way is to take advantage of remote-tracking branches.
+#>
+git ls-remote remote
+git remote show remote
+
+# Bookmarks Remote-tracking state
+# Naming and getting remote branchs and updates
+<#Remote-tracking branch names take the form <remote>/<branch>. For instance, if you wanted to see
+what the master branch on your origin remote looked like as of the last time you communicated
+with it, you would check the origin/master branch. If you were working on an issue with a partner
+and they pushed up an iss53 branch, you might have your own local iss53 branch, but the branch
+on the server would be represented by the remote-tracking branch origin/iss53.#>
+
+<# If you do some work on your local master branch, and, in the meantime, someone else pushes to
+git.ourcompany.com and updates its master branch, then your histories move forward differently.
+Also, as long as you stay out of contact with your origin server, your origin/master pointer doesn’t
+move.#>
+
+<# To synchronize your work with a given remote, you run a git fetch <remote> command (in our
+case, git fetch origin). This command looks up which server “origin” is (in this case, it’s
+git.ourcompany.com), fetches any data from it that you don’t yet have, and updates your local
+database, moving your origin/master pointer to its new, more up-to-date position.#>
