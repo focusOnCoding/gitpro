@@ -466,3 +466,18 @@ didn’t want it to be called serverfix on the remote, you could instead run git
 serverfix:awesomebranch to push your local serverfix branch to the awesomebranch branch on the
 remote project.
 #>
+
+<# It’s important to note that when you do a fetch that brings down new remote-tracking branches,
+you don’t automatically have local, editable copies of them. In other words, in this case, you don’t
+have a new serverfix branch — you have only an origin/serverfix pointer that you can’t modify.
+To merge this work into your current working branch, you can run git merge origin/serverfix. If
+you want your own serverfix branch that you can work on, you can base it off your remotetracking branch:#>
+git checkout -b serverfix origin/serverfix # This gives you a local branch that you can work on that starts where origin/serverfix is.
+
+<# Tracking Branches
+Checking out a local branch from a remote-tracking branch automatically creates what is called a
+93
+“tracking branch” (and the branch it tracks is called an “upstream branch”). Tracking branches are
+local branches that have a direct relationship to a remote branch. If you’re on a tracking branch
+and type git pull, Git automatically knows which server to fetch from and which branch to merge
+in.#>
