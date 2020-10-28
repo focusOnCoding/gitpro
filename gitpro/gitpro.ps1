@@ -476,8 +476,35 @@ git checkout -b serverfix origin/serverfix # This gives you a local branch that 
 
 <# Tracking Branches
 Checking out a local branch from a remote-tracking branch automatically creates what is called a
-93
 “tracking branch” (and the branch it tracks is called an “upstream branch”). Tracking branches are
 local branches that have a direct relationship to a remote branch. If you’re on a tracking branch
 and type git pull, Git automatically knows which server to fetch from and which branch to merge
 in.#>
+
+<# When you clone a repository, it generally automatically creates a master branch that tracks
+origin/master. However, you can set up other tracking branches if you wish — ones that track
+branches on other remotes, or don’t track the master branch. The simple case is the example you
+just saw, running git checkout -b <branch> <remote>/<branch>. This is a common enough operation
+that Git provides the --track shorthand: #>
+git checkout --track origin/serverfix
+
+<# In fact, this is so common that there’s even a shortcut for that shortcut. If the branch name you’re
+trying to checkout (a) doesn’t exist and (b) exactly matches a name on only one remote, Git will
+create a tracking branch for you: #>
+git checkout serverfix
+
+<# To set up a local branch with a different name than the remote branch, you can easily use the first
+version with a different local branch name:
+#>
+git checkout -b sf origin/serverfix
+
+<# If you already have a local branch and want to set it to a remote branch you just pulled down, or
+want to change the upstream branch you’re tracking, you can use the -u or --set-upstream-to
+option to git branch to explicitly set it at any time.#>
+git branch -u origin/serverfix
+
+<# Upstream shorthand
+When you have a tracking branch set up, you can reference its upstream branch
+with the @{upstream} or @{u} shorthand. So if you’re on the master branch and it’s
+tracking origin/master, you can say something like git merge @{u} instead of git
+merge origin/master if you wish#> 
