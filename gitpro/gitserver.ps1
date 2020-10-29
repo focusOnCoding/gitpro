@@ -29,3 +29,70 @@ git remote add local_proj /srv/git/project.git
 
 # To add a local repository to an existing Git project, you can run something like this:
 git remote add local_proj /srv/git/project.git
+
+<# If the server does not respond with a Git HTTP smart service, the Git client will try to fall back to the
+simpler Dumb HTTP protocol. The Dumb protocol expects the bare Git repository to be served like
+normal files from the web server. The beauty of Dumb HTTP is the simplicity of setting it up.
+Basically, all you have to do is put a bare Git repository under your HTTP document root and set up
+a specific post-update hook, and you’re done (See Git Hooks). At that point, anyone who can access
+the web server under which you put the repository can also clone your repository. To allow read
+access to your repository over HTTP, do something like this:#>
+cd /var/www/htdocs/
+git clone --bare /path/to/git_project gitproject.git
+cd gitproject.git
+mv hooks/post-update.sample hooks/post-update
+chmod a+x hooks/post-update
+# to clone the above
+git clone https://example.com/gitproject.git
+
+<# The SSH Protocol
+A common transport protocol for Git when self-hosting is over SSH. This is because SSH access to
+servers is already set up in most places — and if it isn’t, it’s easy to do. SSH is also an authenticated
+network protocol and, because it’s ubiquitous, it’s generally easy to set up and use.
+To clone a Git repository over SSH, you can specify an ssh:// URL like this:#>
+git clone ssh://[user@]server/project.git
+# Or you can use the shorter scp-like syntax for the SSH protocol:
+git clone [user@]server:project.git
+
+#! SHH FACTS
+<# The Pros
+The pros of using SSH are many. First, SSH is relatively easy to set up — SSH daemons are
+commonplace, many network admins have experience with them, and many OS distributions are
+set up with them or have tools to manage them. Next, access over SSH is secure — all data transfer
+is encrypted and authenticated. Last, like the HTTPS, Git and Local protocols, SSH is efficient,
+making the data as compact as possible before transferring it.
+The Cons
+The negative aspect of SSH is that it doesn’t support anonymous access to your Git repository. If
+you’re using SSH, people must have SSH access to your machine, even in a read-only capacity,
+which doesn’t make SSH conducive to open source projects for which people might simply want to
+clone your repository to examine it. If you’re using it only within your corporate network, SSH may
+be the only protocol you need to deal with. If you want to allow anonymous read-only access to
+your projects and also want to use SSH, you’ll have to set up SSH for you to push over but
+something else for others to fetch from.
+#>
+
+#! SETTING UP A SERVER
+<# n order to initially set up any Git server, you have to export an existing repository into a new bare
+repository — a repository that doesn’t contain a working directory. This is generally
+straightforward to do. In order to clone your repository to create a new bare repository, you run the
+clone command with the --bare option. By convention, bare repository directory names end with
+the suffix .git, like so:
+#>
+git clone --bare my_project my_project.git
+<# You should now have a copy of the Git directory data in your my_project.git directory.
+This is roughly equivalent to something like:
+#>
+cp -Rf my_project/.git my_project.git
+
+<# Putting the Bare Repository on a Server
+Now that you have a bare copy of your repository, all you need to do is put it on a server and set up
+your protocols. Let’s say you’ve set up a server called git.example.com to which you have SSH
+access, and you want to store all your Git repositories under the /srv/git directory. Assuming that
+/srv/git exists on that server, you can set up your new repository by copying your bare repository
+over:#>
+scp -r my_project.git user@git.example.com:/srv/git
+# At this point, other users who have SSH-based read access to the /srv/git directory on that server can clone your repository by running:
+git clone user@git.example.com:/srv/git/my_project.git
+<# If a user SSHs into a server and has write access to the /srv/git/my_project.git directory, they will
+also automatically have push access.
+#>
