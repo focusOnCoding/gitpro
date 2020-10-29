@@ -96,3 +96,75 @@ git clone user@git.example.com:/srv/git/my_project.git
 <# If a user SSHs into a server and has write access to the /srv/git/my_project.git directory, they will
 also automatically have push access.
 #>
+
+<# Git will automatically add group write permissions to a repository properly if you run the git init
+command with the --shared option. Note that by running this command, you will not destroy any
+commits, refs, etc. in the process.#>
+ssh user@git.example.com
+cd ./srv/git/my_project.git
+git init --bare --shared
+
+<# Generating Your SSH Public Key
+Many Git servers authenticate using SSH public keys. In order to provide a public key, each user in
+your system must generate one if they don’t already have one. This process is similar across all
+operating systems. First, you should check to make sure you don’t already have a key. By default, a
+user’s SSH keys are stored in that user’s ~/.ssh directory. You can easily check to see if you have a
+key already by going to that directory and listing the contents:
+#>
+ls
+cd ~/.ssh
+authorized_keys2  id_dsa       known_hosts
+config            id_dsa.pub
+
+<# Setting Up the Server
+Let’s walk through setting up SSH access on the server side. In this example, you’ll use the
+authorized_keys method for authenticating your users. We also assume you’re running a standard
+Linux distribution like Ubuntu.
+A good deal of what is described here can be automated by using the ssh-copy-id
+command, rather than manually copying and installing public keys.
+First, you create a git user account and a .ssh directory for that user.
+114#>
+sudo adduser git
+su gitmkdir .ssh && chmod 700 .ssh
+cd
+touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys
+<# Next, you need to add some developer SSH public keys to the authorized_keys file for the git user.
+Let’s assume you have some trusted public keys and have saved them to temporary files. Again, the
+public keys look something like this:
+#>
+cat /tmp/id_rsa.john.pub
+# You just append them to the git user’s authorized_keys file in its .ssh directory:
+cat /tmp/id_rsa.john.pub >> ~/.ssh/authorized_keys
+cat /tmp/id_rsa.josie.pub >> ~/.ssh/authorized_keys
+cat /tmp/id_rsa.jessica.pub >> ~/.ssh/authorized_keys
+<# Now, you can set up an empty repository for them by running git init with the --bare option,
+which initializes the repository without a working directory:#>
+$ cd /srv/git
+mkdir project.git
+cd project.git
+git init --bare
+<# Initialized empty Git repository in /srv/git/project.git/
+Then, John, Josie, or Jessica can push the first version of their project into that repository by adding
+it as a remote and pushing up a branch. Note that someone must shell onto the machine and create
+a bare repository every time you want to add a project. Let’s use gitserver as the hostname of the
+server on which you’ve set up your git user and repository. If you’re running it internally, and you
+set up DNS for gitserver to point to that server, then you can use the commands pretty much as is
+(assuming that myproject is an existing project with files in it):#>
+# on John's computer
+cd myproject
+git init
+git add .
+git commit -m 'Initial commit'
+git remote add origin git@gitserver:/srv/git/project.git
+git push origin master
+#At this point, the others can clone it down and push changes back up just as easily:
+git clone git@gitserver:/srv/git/project.git
+cd project
+vim README
+git commit -am 'Fix for README file'
+git push origin master
+<# With this method, you can quickly get a read/write Git server up and running for a handful of
+developers.#
+
+
+
