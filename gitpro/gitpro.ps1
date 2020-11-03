@@ -1,3 +1,24 @@
+# or create a new repository on the command line
+echo "# MasiyaGit" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/focusOnCoding/MasiyaGit.git
+git push -u origin main
+# origin is a nick name of the remote repo
+
+# …or push an existing repository from the command line
+git remote add origin https://github.com/focusOnCoding/MasiyaGit.git
+git branch -M main
+git push -u origin main
+…or import code from another repository
+# You can initialize this repository with code from a Subversion, Mercurial, or TFS project.
+# fist creat repo on git with the  same name
+git remote add origin https://github.com/focusOnCoding/MasiyaGit.git
+git push origin master
+git push --set-upstream origin master
+
 # open explore in the terminal 
 . start
 
