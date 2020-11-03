@@ -15,7 +15,7 @@ man git-<verb>
 # simple help manue
 git add -h
 
-# after git init i wnat to add the files i want to track or stagte it
+# after git init i want to add the files i want to track or stagte it
 git add filename1
 git add filEname2
 git add filename3 # If you modify a file after you run git add, you have to run git add again to stage the
