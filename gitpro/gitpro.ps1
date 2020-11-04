@@ -362,16 +362,16 @@ Deleted branch hotfix (3a0874c)
 
 # Now you can switch back to your work-in-progress branch on issue #53 and continue working on it.
 git checkout iss53 # Now that your work is merged in, you have no further need for the branch
-Switched to branch "iss53"
+# Switched to branch "iss53"
 
 <# Basic MergingSuppose you’ve decided that your issue #53 work is complete and ready to be merged into your
 master branch. In order to do that, you’ll merge your iss53 branch into master, much like you
 merged your hotfix branch earlier. All you have to do is check out the branch you wish to merge
 into and then run the git merge command:#>
 git checkout master
-Switched to branch 'master'
+# Switched to branch 'master'
 git merge iss53
-Merge made by the 'recursive' strategy
+# Merge made by the 'recursive' strategy
 
 # page 77 Merge Conflicts
 # If you want to use a graphical tool to resolve these issues, you can run 
