@@ -30,6 +30,5 @@ chmod 644 file2.txt # or 755 is the one to use on executeble  files
 # kill programmes
 kill firefox # end firefox process
 
-
 watch # rerun every two seconds
 watch free -h # see how much free memory my PC: has
