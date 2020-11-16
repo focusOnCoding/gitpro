@@ -71,6 +71,17 @@ your projects and also want to use SSH, you’ll have to set up SSH for you to p
 something else for others to fetch from.
 #>
 
+<# The Git Protocol
+Finally, we have the Git protocol. This is a special daemon that comes packaged with Git; it listens
+on a dedicated port (9418) that provides a service similar to the SSH protocol, but with absolutely
+no authentication. In order for a repository to be served over the Git protocol, you must create a
+git-daemon-export-ok file — the daemon won’t serve a repository without that file in it — but, other
+than that, there is no security. Either the Git repository is available for everyone to clone, or it isn’t.
+This means that there is generally no pushing over this protocol. You can enable push access but,
+given the lack of authentication, anyone on the internet who finds your project’s URL could push to
+that project. Suffice it to say that this is rare.
+#>
+
 #! SETTING UP A SERVER
 <# n order to initially set up any Git server, you have to export an existing repository into a new bare
 repository — a repository that doesn’t contain a working directory. This is generally
@@ -116,6 +127,17 @@ cd ~/.ssh
 authorized_keys2  id_dsa       known_hosts
 config            id_dsa.pub
 
+<# You’re looking for a pair of files named something like id_dsa or id_rsa and a matching file with a
+.pub extension. The .pub file is your public key, and the other file is the corresponding private key. If
+you don’t have these files (or you don’t even have a .ssh directory), you can create them by running
+a program called ssh-keygen, which is provided with the SSH package on Linux/macOS systems and
+comes with Git for Windows:
+#>
+ssh-keygen -o
+<# Now, each user that does this has to send their public key to you or whoever is administrating the
+Git server (assuming you’re using an SSH server setup that requires public keys). All they have to
+do is copy the contents of the .pub file and email it.#>
+
 <# Setting Up the Server
 Let’s walk through setting up SSH access on the server side. In this example, you’ll use the
 authorized_keys method for authenticating your users. We also assume you’re running a standard
@@ -123,17 +145,19 @@ Linux distribution like Ubuntu.
 A good deal of what is described here can be automated by using the ssh-copy-id
 command, rather than manually copying and installing public keys.
 First, you create a git user account and a .ssh directory for that user.
-114#>
+#>
 sudo adduser git
 su gitmkdir .ssh && chmod 700 .ssh
 cd
 touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys
+
 <# Next, you need to add some developer SSH public keys to the authorized_keys file for the git user.
 Let’s assume you have some trusted public keys and have saved them to temporary files. Again, the
 public keys look something like this:
 #>
 cat /tmp/id_rsa.john.pub
 # You just append them to the git user’s authorized_keys file in its .ssh directory:
+#!{this is the group of people that have sent me theyer public keys and this is how i addthem to the git users .ssh dir}
 cat /tmp/id_rsa.john.pub >> ~/.ssh/authorized_keys
 cat /tmp/id_rsa.josie.pub >> ~/.ssh/authorized_keys
 cat /tmp/id_rsa.jessica.pub >> ~/.ssh/authorized_keys
@@ -143,13 +167,13 @@ $ cd /srv/git
 mkdir project.git
 cd project.git
 git init --bare
-<# Initialized empty Git repository in /srv/git/project.git/
-Then, John, Josie, or Jessica can push the first version of their project into that repository by adding
+<# Then, John, Josie, or Jessica can push the first version of their project into that repository by adding
 it as a remote and pushing up a branch. Note that someone must shell onto the machine and create
 a bare repository every time you want to add a project. Let’s use gitserver as the hostname of the
 server on which you’ve set up your git user and repository. If you’re running it internally, and you
 set up DNS for gitserver to point to that server, then you can use the commands pretty much as is
-(assuming that myproject is an existing project with files in it):#>
+(assuming that myproject is an existing project with files in it):
+#>
 # on John's computer
 cd myproject
 git init
@@ -157,14 +181,62 @@ git add .
 git commit -m 'Initial commit'
 git remote add origin git@gitserver:/srv/git/project.git
 git push origin master
-#At this point, the others can clone it down and push changes back up just as easily:
+# that this point, the others can clone it down and push changes back up just as easily:
 git clone git@gitserver:/srv/git/project.git
 cd project
 vim README
 git commit -am 'Fix for README file'
 git push origin master
-<# With this method, you can quickly get a read/write Git server up and running for a handful of
-developers.#
+<# You should note that currently all these users can also log into the server and get a shell as the git
+user. If you want to restrict that, you will have to change the shell to something else in the
+/etc/passwd file.
+#>
 
+<# You can easily restrict the git user account to only Git-related activities with a limited shell tool
+called git-shell that comes with Git. If you set this as the git user account’s login shell, then that
+account can’t have normal shell access to your server. To use this, specify git-shell instead of bash
+or csh for that account’s login shell. To do so, you must first add the full pathname of the git-shell
+command to /etc/shells if it’s not already there:
+#>
+cat /etc/shells   # see if git-shell is already in there. If not...
+which git-shell   # make sure git-shell is installed on your system.
+sudo -e /etc/shells  # and add the path to git-shell from last command
+# Now you can edit the shell for a user using chsh <username> -s <shell>:
+sudo chsh git -s $(which git-shell)
 
+<# At this point, users are still able to use SSH port forwarding to access any host the git server is able
+to reach. If you want to prevent that, you can edit the authorized_keys file and prepend the
+following options to each key you’d like to restrict:
+#>
+no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty
+
+# Git Daemon git protocall no sercuoe
+<# Next we’ll set up a daemon serving repositories using the “Git” protocol. This is a common choice
+for fast, unauthenticated access to your Git data. Remember that since this is not an authenticated
+service, anything you serve over this protocol is public within its network.#>
+git daemon --reuseaddr --base-path=/srv/git/ /srv/git/
+
+<# Since systemd is the most common init system among modern Linux distributions, you can use it for
+that purpose. Simply place a file in /etc/systemd/system/git-daemon.service with these contents:
+#>
+[Unit]
+Description=Start Git Daemon
+[Service]
+ExecStart=/usr/bin/git daemon --reuseaddr --base-path=/srv/git/ /srv/git/
+Restart=always
+RestartSec=500ms
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=git-daemon
+User=git
+Group=git
+[Install]
+WantedBy=multi-user.target
+
+<# Next, you have to tell Git which repositories to allow unauthenticated Git server-based access to.
+You can do this in each repository by creating a file named git-daemon-export-ok.
+#>
+cd /path/to/project.git
+touch git-daemon-export-ok
+# The presence of that file tells Git that it’s OK to serve this project without authentication.
 
