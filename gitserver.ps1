@@ -240,3 +240,85 @@ cd /path/to/project.git
 touch git-daemon-export-ok
 # The presence of that file tells Git that it’s OK to serve this project without authentication.
 
+<# Smart HTTP
+We now have authenticated access through SSH and unauthenticated access through git://, but
+there is also a protocol that can do both at the same time. Setting up Smart HTTP is basically just#>
+
+<# enabling a CGI script that is provided with Git called git-http-backend on the server. This CGI will
+read the path and headers sent by a git fetch or git push to an HTTP URL and determine if the
+client can communicate over HTTP (which is true for any client since version 1.6.6). If the CGI sees
+that the client is smart, it will communicate smartly with it; otherwise it will fall back to the dumb
+behavior (so it is backward compatible for reads with older clients).
+Let’s walk through a very basic setup. We’ll set this up with Apache as the CGI server. If you don’t
+have Apache setup, you can do so on a Linux box with something like this:#>
+sudo apt-get install apache2 apache2-utils
+a2enmod cgi alias env
+<# This also enables the mod_cgi, mod_alias, and mod_env modules, which are all needed for this to work
+properly.
+You’ll also need to set the Unix user group of the /srv/git directories to www-data so your web server
+can read- and write-access the repositories, because the Apache instance running the CGI script will
+(by default) be running as that user:#>
+chgrp -R www-data /srv/git
+<# Next we need to add some things to the Apache configuration to run the git-http-backend as the
+handler for anything coming into the /git path of your web server.#>
+SetEnv GIT_PROJECT_ROOT /srv/git
+SetEnv GIT_HTTP_EXPORT_ALL
+ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
+<# If you leave out GIT_HTTP_EXPORT_ALL environment variable, then Git will only serve to
+unauthenticated clients the repositories with the git-daemon-export-ok file in them, just like the Git
+daemon did.
+#>
+
+htpasswd -c /srv/git/.htpasswd schacon
+<#There are tons of ways to have Apache authenticate users, you’ll have to choose and implement one
+of them. This is just the simplest example we could come up with. You’ll also almost certainly want
+to set this up over SSL so all this data is encrypted.#>
+
+<# If you want to check out what GitWeb would look like for your project, Git comes with a command
+to fire up a temporary instance if you have a lightweight web server on your system like lighttpd or
+webrick. On Linux machines, lighttpd is often installed, so you may be able to get it to run by typing
+git instaweb in your project directory. If you’re running a Mac, Leopard comes preinstalled with
+Ruby, so webrick may be your best bet. To start instaweb with a non-lighttpd handler, you can run it
+with the --httpd option.
+#>
+git instaweb --httpd=webrick
+
+<# That starts up an HTTPD server on port 1234 and then automatically starts a web browser that
+opens on that page. It’s pretty easy on your part. When you’re done and want to shut down the
+server, you can run the same command with the --stop option:
+#>
+git instaweb --httpd=webrick --stop
+
+<# If you want to run the web interface on a server all the time for your team or for an open source
+project you’re hosting, you’ll need to set up the CGI script to be served by your normal web server.
+Some Linux distributions have a gitweb package that you may be able to install via apt or dnf, so
+you may want to try that first. We’ll walk through installing GitWeb manually very quickly. First,
+you need to get the Git source code, which GitWeb comes with, and generate the custom CGI script: #>
+git clone git://git.kernel.org/pub/scm/git/git.git
+cd git/
+make GITWEB_PROJECTROOT="/srv/git" prefix=/usr gitweb
+  SUBDIR gitweb
+  SUBDIR ../
+make[2]: `GIT-VERSION-FILE' is up to date.
+  GEN gitweb.cgi
+  GEN static/gitweb.js
+sudo cp -Rf gitweb /var/www/
+<# Notice that you have to tell the command where to find your Git repositories with the
+GITWEB_PROJECTROOT variable. Now, you need to make Apache use CGI for that script, for which you
+can add a VirtualHost: #>
+<VirtualHost *:80>
+  ServerName gitserver
+  DocumentRoot /var/www/gitweb
+  <Directory /var/www/gitweb>
+  Options +ExecCGI +FollowSymLinks +SymLinksIfOwnerMatch
+  AllowOverride All
+  order allow,deny
+  Allow from all
+  AddHandler cgi-script cgi
+  DirectoryIndex gitweb.cgi
+  </Directory>
+</VirtualHost>
+<# Again, GitWeb can be served with any CGI or Perl capable web server; if you prefer to use
+something else, it shouldn’t be difficult to set up. At this point, you should be able to visit
+http://gitserver/ to view your repositories online.
+#>

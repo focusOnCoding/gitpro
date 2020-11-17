@@ -650,4 +650,33 @@ value with something like git config --global pull.rebase true.#>
 git pull --rebase 
 git config --global pull
 
-# 123
+git diff --check
+# which identifies possible whitespace errors and lists them for you.
+
+<# If all your commit messages follow this model, things will be much easier for you and the
+developers with whom you collaborate. The Git project has well-formatted commit messages — try
+running
+#>
+git log --no-merges
+
+<# The issue54..origin/master syntax is a log filter that asks Git to display only those commits that are
+on the latter branch (in this case origin/master) that are not on the first branch (in this case
+#>
+git log --no-merges issue54..origin/master
+
+# conributing vaya email
+<# Now you have two commits that you want to send to the mailing list. You use git format-patch to
+generate the mbox-formatted files that you can email to the list — it turns each commit into an
+<#
+email message with the first line of the commit message as the subject and the rest of the message
+plus the patch that the commit introduces as the body. The nice thing about this is that applying a
+patch from an email generated with format-patch preserves all the commit information properly.
+#>
+git format-patch -M origin/master
+<#
+0001-add-limit-to-log-function.patch
+0002-increase-log-output-to-30-from-25.patch
+The format-patch command prints out the names of the patch files it creates. The -M switch tells Git
+to look for renames. The files end up looking like this:
+#>
+cat 0001-add-limit-to-log-function.patch
