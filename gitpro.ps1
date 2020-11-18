@@ -681,4 +681,3 @@ to look for renames. The files end up looking like this:
 #>
 cat 0001-add-limit-to-log-function.patch
 
-# 159
