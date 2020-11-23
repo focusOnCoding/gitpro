@@ -226,4 +226,93 @@ branch into the release branch and also merge -s ours the same branch into your 
 (even though the fix is already there) so when you later merge the release branch again, there are
 no conflicts from the bugfix.
 #>
-#293
+
+<# Subtree Merging
+The idea of the subtree merge is that you have two projects, and one of the projects maps to a
+subdirectory of the other one. When you specify a subtree merge, Git is often smart enough to
+figure out that one is a subtree of the other and merge appropriately.
+We’ll go through an example of adding a separate project into an existing project and then merging
+the code of the second into a subdirectory of the first.
+First, we’ll add the Rack application to our project. We’ll add the Rack project as a remote reference
+in our own project and then check it out into its own branch:
+#>
+$ git remote add rack_remote https://github.com/rack/rack
+$ git fetch rack_remote --no-tags
+<# Now we have the root of the Rack project in our rack_branch branch and our own project in the
+master branch. If you check out one and then the other, you can see that they have different project
+roots:
+#>
+ls
+git checkout master
+
+<# In this case, we want to pull the Rack project into our master project as a subdirectory. We can do
+that in Git with git read-tree. You’ll learn more about read-tree and its friends in Git Internals, but
+for now know that it reads the root tree of one branch into your current staging area and working
+directory. We just switched back to your master branch, and we pull the rack_branch branch into the
+rack subdirectory of our master branch of our main project:#>
+git read-tree --prefix=rack/ -u rack_branch
+<# When we commit, it looks like we have all the Rack files under that subdirectory – as though we
+copied them in from a tarball. What gets interesting is that we can fairly easily merge changes from
+one of the branches to the other. So, if the Rack project updates, we can pull in upstream changes
+by switching to that branch and pulling:
+#>
+git checkout rack_branch
+
+<# Then, we can merge those changes back into our master branch. To pull in the changes and
+prepopulate the commit message, use the --squash option, as well as the recursive merge strategy’s
+-Xsubtree option. The recursive strategy is the default here, but we include it for clarity.
+#>
+git checkout master
+git merge --squash -s recursive -Xsubtree=rack rack_branch
+<#All the changes from the Rack project are merged in and ready to be committed locally. You can also
+do the opposite – make changes in the rack subdirectory of your master branch and then merge
+them into your rack_branch branch later to submit them to the maintainers or push them upstream.#>
+<#Another slightly weird thing is that to get a diff between what you have in your rack subdirectory
+and the code in your rack_branch branch – to see if you need to merge them – you can’t use the
+normal diff command. Instead, you must run git diff-tree with the branch you want to compare
+to:
+294
+#>
+git diff-tree -p rack_branch
+
+<# Or, to compare what is in your rack subdirectory with what the master branch on the server was the
+last time you fetched, you can run:
+#>
+git diff-tree -p rack_remote/master
+
+# To enable rerere functionality, you simply have to run this config setting:
+git config --global rerere.enabled tru
+
+# When we merge the two branches together, we’ll get a merge conflict:
+git merge i18n-world
+# However, git rerere will also tell you what it has recorded the pre-merge state for with git rerere status:
+git rerere status
+# And git rerere diff will show the current state of the resolution — what you started with to resolve and what you’ve resolved it to.
+git rerere diff
+
+<# Also (and this isn’t really related to rerere), you can use git ls-files -u to see the conflicted files
+and the before, left and right versions:
+#>
+git ls-files -u
+
+<# Now, let’s undo that merge and then rebase it on top of our master branch instead. We can move our
+branch back by using git reset as we saw in Reset Demystified.
+#>
+git reset --hard HEAD^
+
+# You can also recreate the conflicted file state with git checkout:
+git checkout --conflict=merge hello.rb
+cat hello.rb
+#! /usr/bin/env 
+
+# We saw an example of this in Advanced Merging. For now though, let’s re-resolve it by just running git rerere again:
+git rerere
+
+<# We have re-resolved the file automatically using the rerere cached resolution. You can now add and
+continue the rebase to complete it.
+#>
+git add hello.rb
+git rebase --continue
+<#So, if you do a lot of re-merges, or want to keep a topic branch up to date with your master branch
+without a ton of merges, or you rebase often, you can turn on rerere to help your life out a bit#>
+
